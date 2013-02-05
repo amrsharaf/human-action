@@ -38,22 +38,9 @@ for i = 2:length(source)
     end
 
 % Threshold the image to get a binary image (only 0's and 1's) of class "logical."
-% Method #1: using im2bw()
-%   normalizedThresholdValue = 0.4; % In range 0 to 1.
-%   thresholdValue = normalizedThresholdValue * max(max(originalImage)); % Gray Levels.
-%   binaryImage = im2bw(originalImage, normalizedThresholdValue);       % One way to threshold to binary
-% Method #2: using a logical operation.
+% using a logical operation.
   thresholdValue = 7;
   binaryImage = fg > thresholdValue; % Bright objects will be the chosen if you use >.
-  % binaryImage = originalImage < thresholdValue; % Dark objects will be
-  % the chosen if you use <.
-% Do a "hole fill" to get rid of any background pixels inside the blobs.
-% Perform errosion and dilation
-binaryImage = imfill(binaryImage, 'holes');  
-% set disk size for image operations
-se = strel('disk',12);
-se2 = strel('disk',4);
-binaryImage = imopen(imclose(binaryImage,se),se2);
 
 labeledImage = bwlabel(binaryImage, 8);     % Label each blob so we can make measurements of it
 coloredLabels = label2rgb (labeledImage, 'hsv', 'k', 'shuffle'); % pseudo random color labels
@@ -80,32 +67,28 @@ keeperBlobsImage = ismember(labeledImage, keeperIndexes);
 labeledDimeImage = bwlabel(keeperBlobsImage, 8);     % Label each blob so we can make measurements of it
 % Now we're done.  We have a labeled image of blobs that meet our specified criteria.
 
-    figure(1),subplot(3,1,1),imshow(fr);
-    subplot(3, 1, 2); imagesc(binaryImage); colormap(gray(256)); title('Binary Image, obtained by thresholding'); xlabel('');axis square ;
-        for k = 1 : length(blobMeasurements)
-            box = blobMeasurements(k).BoundingBox;
-            if blobMeasurements(k).Area > 1
-                hold on
-                    rectangle('Position',box,'EdgeColor','b');
-                hold off
-            end
-        end    
-    subplot(3, 1, 3); 
-    imshow(fr);
-    title('"Keepers" what we believe that are actual cars');         
-        if size(keeperIndexes) 
-            for k = 1 : length(keeperIndexes)
-                hold on
-                box = blobMeasurements(keeperIndexes(k)).BoundingBox;
-                    rectangle('Position',box,'EdgeColor','g');
-                    hold off
-                    blobMeasurements(keeperIndexes(k)).Area
-                    
-            end
-                  'a'
-        end
-     %M(i-1)  = im2frame(uint8(fr),gray);             % save output as movie
-     %M(i-1)  = im2frame(uint8(bg_bw),gray);             % save output as movie
+figure(1),subplot(2,1,1),imshow(fr);
+subplot(2, 1, 2); 
+imagesc(binaryImage); 
+colormap(gray(256)); 
+title('Binary Image, obtained by thresholding'); 
+xlabel('');
+axis square ;
+maxval = 0;
+maxid = -1;
+for k = 1 : length(blobMeasurements)
+    if blobMeasurements(k).Area > maxval
+	maxval = blobMeasurements(k).Area;
+	maxid = k
+    end
 end
 
- %movie2avi(M,'approximate_median_background2','fps',30);           % save movie as avi
+box = blobMeasurements(maxid).BoundingBox;
+hold on
+rectangle('Position',box,'EdgeColor','b');
+hold off
+
+subImage = imcrop(binaryImage, box);
+imshow(subImage)
+end
+
