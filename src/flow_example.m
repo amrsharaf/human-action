@@ -1,5 +1,5 @@
 % Frames is sequence of frames, N-by-M-by-T
-frame_dir = '/weizmann_part/frames/jump1';
+frame_dir = '../weizmann_part/frames/jump1';
 Frames = [];
 for f_i=1:10
   Frames(:,:,f_i) = rgb2gray(imread(sprintf('%s/%08d.jpg',frame_dir,f_i)));
