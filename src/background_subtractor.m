@@ -3,8 +3,9 @@
 % or otherwise), as long as the author (Seth Benton) is acknowledged.
 
 clear all
-
-source = aviread('../weizmann_part/videos/jump2');
+Frames = [];
+base_dir = '../weizmann_part/videos';
+source = aviread(strcat(base_dir,'/run1'));
 % Threshold value for background subtraction
 thresh = 35;           
 % read in first frame as initial background frame
@@ -79,7 +80,7 @@ maxid = -1;
 for k = 1 : length(blobMeasurements)
     if blobMeasurements(k).Area > maxval
 	maxval = blobMeasurements(k).Area;
-	maxid = k
+	maxid = k;
     end
 end
 
@@ -89,6 +90,18 @@ rectangle('Position',box,'EdgeColor','b');
 hold off
 
 subImage = imcrop(binaryImage, box);
-imshow(subImage)
+ssubImage = imresize(subImage, [60 60]);
+imshow(ssubImage)
+Frames(:,:,i-1)=double(ssubImage);
 end
-
+[VX, VY] = lk3(Frames);
+% Visualize (unblurred) flow.
+%if 1
+%  im_i=2; % Note, no flow for first and last images.
+%  figure(1);
+%  imshow(Frames(:,:,im_i))
+%  hold on;
+%  quiver(-VX(:,:,im_i-1),-VY(:,:,im_i-1),0);
+%  hold off
+%end
+ohog = gradientHistogram(VX(:,:,2), VY(:,:,2), 16)
