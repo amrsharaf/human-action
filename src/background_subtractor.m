@@ -52,7 +52,7 @@ for ii=1:2
 
 	% Get all the blob properties.  Can only pass in originalImage in version R2008a and later.
 	blobMeasurements = regionprops(labeledImage, fg, 'all');
-	numberOfBlobs = size(blobMeasurements, 1);
+	numberOfBlobs = size(blobMeasurements, 2);
 
 	% Now I'll demonstrate how to select certain blobs based using the ismember function.
 	% Let's say that we wanted to find only those blobs 
@@ -97,7 +97,8 @@ for ii=1:2
 	Frames(:,:,i-1)=double(ssubImage);
 	end
 	[VX, VY] = lk3(Frames);
-	for k = 1 : length(VX)
+	sz = size(VX)
+	for k = 1 : sz(3)
 		ohog = gradientHistogram(VX(:,:,k), VY(:,:,k), 32);
 		Training = [Training; ohog'];
 		Group = [Group; c];
@@ -195,7 +196,8 @@ for ii=3:3
 	Frames(:,:,i-1)=double(ssubImage);
 	end
 	[VX, VY] = lk3(Frames);
-	for k = 1 : length(VX)
+	sz = size(VX)
+	for k = 1 : sz(3)
 		ohog = gradientHistogram(VX(:,:,k), VY(:,:,k), 32);
 		Sample = [Sample; ohog'];
 	end

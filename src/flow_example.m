@@ -4,11 +4,7 @@ Frames = [];
 for f_i=1:10
   Frames(:,:,f_i) = rgb2gray(imread(sprintf('%s/%08d.jpg',frame_dir,f_i)));
 end
-
-
-
 [VX,VY]=lk3(Frames);
-
 % Visualize (unblurred) flow.
 if 1
   im_i=2; % Note, no flow for first and last images.
