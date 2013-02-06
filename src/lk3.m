@@ -31,7 +31,7 @@ wf	= 1;
 
 
 % view motion sequence
-if( 0 ) 
+if( 1 ) 
   clear Mov;
   for i =1 : nframes
     %imshow( seq(i).im,256 );
@@ -101,7 +101,7 @@ for fr = 1+wf : nframes-wf,
 
 
   %% Debug, visualization of this frame.
-  if 0,
+  if 1,
     figure(3);
     imagesc(f);
     hold on;

@@ -16,8 +16,11 @@ for c=1:length(activity)
 		    fr = source(i).cdata;
 		    Frames(:,:,i)=rgb2gray(fr);
 		end
+		c
+		ii
 		'done with video'
-		[VX, VY] = lk3(Frames);
+		%[VX, VY] = lk3(Frames);
+		[VX, VY] = OpticalFlow(Frames, 30, 1);
 		'done with optical flow'
 		sz = size(VX)
 		for k = 1 : sz(3)
