@@ -45,19 +45,14 @@ for c=1:length(activity)
 end
 c = knnclassify(Sample, Training, Group);
 cp = classperf(Label,c);
-get(cp)
- 
-% 10-fold cross-validation on the fisheriris data using linear
-% discriminant analysis and the third column as only feature for
-% classification
-%load fisheriris
-%indices = crossvalind('Kfold',species,10);
-%cp = classperf(species); % initializes the CP object
-%for i = 1:10
-%    test = (indices == i); train = ~test;
-%    class = classify(meas(test,3),meas(train,3),species(train));
-    % updates the CP object with the current classification results
-%    classperf(cp,class,test)  
-%end
-%cp.CorrectRate % queries for the correct classification rate
+%get(cp)
+cp.CountingMatrix
+table = cp.DiagnosticTable;
+tp = table(1,1)
+fp = table(1,2)
+tn = table(2,1)
+fn = table(2,2)
+precision = tp / (tp + fp) 
+recall = tp / (tp + fn)
+error_rate = cp.ErrorRate
 

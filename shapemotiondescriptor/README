@@ -1,0 +1,46 @@
+** This is an example code for feature extraction described in
+
+Zhe Lin, Zhuolin Jiang, and Larry S. Davis,
+"Recognizing Actions by Shape-Motion Prototype Trees", ICCV 2009.
+
+Zhuolin Jiang, Zhe Lin, and Larry S. Davis,
+"Recognizing Human Actions by Learning and Matching Shape-Motion 
+Prototype Trees", TPAMI 2012.
+
+
+***********************************
+1) Toolboxes
+The package uses the Piotr's matlab toolbox (http://vision.ucsd.edu/~pdollar/toolbox/doc/)
+and optical flow toolbox (http://www.cs.umd.edu/users/ogale/openvis3d/docs/index.html)
+Both of them are provided in this package, you might need to recompile these two toolbox,  
+
+please run the matlab file
+
+"toolbox\external\toolboxCompile.m " 
+
+and run the command within matlab 
+
+"mex OvFlowMatlab.cpp MatlabImageAdapter.cpp OvImageAdapter.cpp"
+
+**********************************
+2) How to use the feature extraction code for shape-motion descriptor
+
+About how to extract shape and motion descriptor, please refer to the matlab file 
+'demo_code.m'. The detailed explanations for parameters have been provided in this file. You can run 
+it to further understand our approach.
+
+
+If you happen to use this feature extraction code, please cite one of our papers:
+
+(a) Zhe Lin, Zhuolin Jiang, and Larry S. Davis, "Recognizing Actions by Shape-Motion 
+Prototype Trees", IEEE 12th International Conference on Computer Vision (ICCV), 2009.
+
+(b) Zhuolin Jiang, Zhe Lin, and Larry S. Davis, "Recognizing Human Actions by Learning and
+Matching Shape-Motion Prototype Trees". IEEE Transactions on Pattern Analysis and 
+Machine Intelligence, 2012, 34(3): 533-547.
+
+This feature extraction package is successfully tested on Windows7 64 bits, Windows XP 32 bits 
+and Matlab R2009b, R2007b. 
+
+For any problems with the code, please contact me: zhuolin@umiacs.umd.edu
+
