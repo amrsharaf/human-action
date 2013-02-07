@@ -6,7 +6,7 @@ Frames = [];
 Training = [];
 Group = [];
 base_dir = '../weizmann_part/videos/';
-activity = {'jump', 'run', 'walk'};
+activity = {'run', 'walk', 'jump'};
 for c=1:length(activity)
 for ii=1:2
 	source = aviread(strcat(base_dir,activity{c},int2str(ii)));
@@ -93,7 +93,7 @@ for ii=1:2
 	hold off
 	subImage = imcrop(binaryImage, box);
 	ssubImage = imresize(subImage, [60 60]);
-	imshow(ssubImage)
+	%imshow(ssubImage)
 	Frames(:,:,i-1)=double(ssubImage);
 	end
 	[VX, VY] = lk3(Frames);
