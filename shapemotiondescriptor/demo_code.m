@@ -13,14 +13,14 @@
 % Date: 07-21-2012
 % =========================================================================
 
-clear all;
-close all;
-clc;
+function [shapedes, motiondes] = demo_code(bimg_fn, img1_fn, img2_fn)
+%clear all;
+%close all;
+%clc;
 nShowTag = 1; % visualize the observations and the extraced descriptors
 
 %% extract silhouette-based shape descriptor
-
-bimg_fn = './images/bimg220.png';
+%bimg_fn = './images/bimg220.png';
 bimg = imread(bimg_fn);
 
 % Step1: Specifying the action interest region (related to boundingbox of
@@ -56,7 +56,7 @@ if nShowTag,
 end
 
 %% extract simplified hog-based shape descriptor
-img1_fn = './images/img120.bmp';
+%img1_fn = './images/img120.bmp';
 img1 = imread(img1_fn);
 
 % Step1: Computing gradient observations for an input image
@@ -109,8 +109,8 @@ if nShowTag,
 end
 
 %% extract optical flow based motion descriptors
-img1_fn = './images/img120.bmp';
-img2_fn = './images/img121.bmp';
+%img1_fn = './images/img120.bmp';
+%img2_fn = './images/img121.bmp';
 img1 = imread(img1_fn);
 img2 = imread(img2_fn);
 
@@ -192,4 +192,6 @@ if nShowTag,
     quiver(xc,yc,'color','g');
     set(gcf,'Color','w');
     title('Motion Des.(Form 2)');
+end
+
 end
