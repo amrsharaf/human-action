@@ -1,0 +1,199 @@
+% =========================================================================
+% An example code of feature extraction for representing huamn actions
+% proposed in
+%
+%   Zhe Lin, Zhuolin Jiang, and Larry S. Davis,
+%   "Recognizing Actions by Shape-Motion Prototype Trees", ICCV 2009.
+%
+%   Zhuolin Jiang, Zhe Lin, and Larry S. Davis,
+%   "Recognizing Human Actions by Learning and Matching Shape-Motion
+%    Prototype Trees", TPAMI 2012.
+%
+% Author: Zhuolin Jiang (zhuolin@umiacs.umd.edu)
+% Date: 07-21-2012
+% =========================================================================
+
+function [shapedes, motiondes] = extract_features(img1, img2)
+%clear all;
+%close all;
+%clc;
+nShowTag = 1; % visualize the observations and the extraced descriptors
+
+%% extract silhouette-based shape descriptor
+%bimg_fn = './images/bimg220.png';
+%bimg = imread(img1_fn);
+
+% Step1: Specifying the action interest region (related to boundingbox of
+% human region, please refer to our paper if you have questions)
+[row,col] = find(img1);
+bbox.xmin = min(col); bbox.xmax = max(col);
+bbox.ymin = min(row); bbox.ymax = max(row);
+xmin = round((bbox.xmin+bbox.xmax)/2.0-(bbox.ymax-bbox.ymin)/2.0);
+xmax = round((bbox.xmin+bbox.xmax)/2.0+(bbox.ymax-bbox.ymin)/2.0);
+ymin = bbox.ymin;
+ymax = bbox.ymax;
+actionIR.xmin = xmin; actionIR.xmax = xmax;
+actionIR.ymin = ymin; actionIR.ymax = ymax;
+
+% Step2: Extracting the silhouette descriptors
+gridn_shape = 18; % demension of shape des.: gridn_shape*gridn_shape
+shapedes = extractShapeDescriptorBG(img1, actionIR, gridn_shape);
+
+% Step3 (optional): Visualization of the silhouette observation and descriptor
+if nShowTag,
+    % Silhouette
+    subbimg = img1(ymin:ymax,xmin:xmax);
+    figure,
+    subaxis(2,4,1,'Spacing', 0.03, 'Padding', 0.001, 'Margin', 0),
+    imshow(subbimg);
+    title('Silhouette');
+    
+    % Descriptor
+    spimg = reshape(shapedes,gridn_shape,gridn_shape);
+    subaxis(2,4,2,'Spacing', 0.03, 'Padding', 0.001, 'Margin', 0),
+    imshow(spimg',[]);
+    title('Silhouette-based Shape');
+end
+
+%% extract simplified hog-based shape descriptor
+%img1_fn = './images/img120.bmp';
+%img1 = imread(img1_fn);
+
+% Step1: Computing gradient observations for an input image
+img1
+size(img1)
+[mag,theta] = computegradientdata(img1);
+
+% Step2: Specifying the action interest region
+bbox.xmin = 340; bbox.xmax = 500;
+bbox.ymin = 85;  bbox.ymax = 408;
+[height, width]=size(mag);
+xmin = max(round((bbox.xmin+bbox.xmax)/2.0-(bbox.ymax-bbox.ymin)/2.0),1);
+xmax = min(round((bbox.xmin+bbox.xmax)/2.0+(bbox.ymax-bbox.ymin)/2.0),width);
+ymin = max(bbox.ymin,1);
+ymax = min(bbox.ymax,height);
+actionIR.xmin = xmin; actionIR.xmax = xmax;
+actionIR.ymin = ymin; actionIR.ymax = ymax;
+
+% Step3: Extracting the simplified (non-overlapping) hog descritpor
+gridquant = 6; % dimension of hog des.: gridquant*gridquant*thequant
+thequant = 9;
+[hogdes,sub_hog_mat] = extractShapeDescriptorHOG(mag, theta, gridquant,...
+    thequant, actionIR, 1);
+hogdes = hogdes./(norm(hogdes)+eps); % L2 normalization
+
+% Step4 (optional): Visualization of the image gradient observation 
+% and descriptor
+if nShowTag,
+    % Image gradients
+    magdata = mag(ymin:ymax,xmin:xmax);
+    thetadata = theta(ymin:ymax,xmin:xmax);
+    gradientx1 = magdata.*cos(thetadata);
+    grdaienty1 = magdata.*sin(thetadata);
+    subimg = img1(ymin:ymax,xmin:xmax,:);
+    subaxis(2,4,3,'Spacing', 0.03, 'Padding', 0.001, 'Margin', 0)
+    imshow(subimg,'border','tight');
+    [X,Y]=meshgrid(1:8:size(subimg,2),1:8:size(subimg,1));
+    imgrax = gradientx1(1:8:end,1:8:end);
+    imgray = grdaienty1(1:8:end,1:8:end);
+    hold on;
+    quiver(X,Y,imgrax,imgray,1.6,'color','y');
+    hold off;
+    set(gcf,'color','w');
+    title('Image Gradient Field');
+    
+    % Descriptor
+    addpath(genpath('./toolbox'));
+    V=hogDraw(sub_hog_mat,30);
+    subaxis(2,4,4,'Spacing', 0.03, 'Padding', 0.001, 'Margin', 0),
+    imshow(V);
+    title('HOG-based Shape');
+end
+
+%% extract optical flow based motion descriptors
+%img1_fn = './images/img120.bmp';
+%img2_fn = './images/img121.bmp';
+%img1 = imread(img1_fn);
+%img2 = imread(img2_fn);
+
+% Step1: Computing the optical flow field for two input images
+addpath(genpath('./openvis3dsrc/'));
+minshiftX = -5; maxshiftX = 5;
+minshiftY = -5; maxshiftY = 5;
+[x1,y1,o1,x2,y2,o2] = OvFlowMatlab(img1,img2,minshiftX,maxshiftX,...
+    minshiftY,maxshiftY);
+
+% compute median compensated optical flow fields
+nMotionComp = 1; % median compensation for optical flow
+if nMotionComp,
+    x1 = x1 - median(x1(:));
+    y1 = y1 - median(y1(:));
+end
+
+% Step2: Specifying the action interest region
+bbox.xmin=340; bbox.xmax=500;
+bbox.ymin=85; bbox.ymax=408;
+[height, width]=size(x1);
+xmin=max(round((bbox.xmin+bbox.xmax)/2.0-(bbox.ymax-bbox.ymin)/2.0),1);
+xmax=min(round((bbox.xmin+bbox.xmax)/2.0+(bbox.ymax-bbox.ymin)/2.0),width);
+ymin=max(bbox.ymin,1);
+ymax=min(bbox.ymax,height);
+actionIR.xmin=xmin; actionIR.xmax=xmax;
+actionIR.ymin=ymin; actionIR.ymax=ymax;
+
+% Step3: Extracting motion descriptors from the flow field
+gridn_motion = 9; % the demension of descriptor is 4*gridn_motion*gridn_motion
+[desxp, desxm, desyp, desym] = extractMotionDescriptor(x1,y1,...
+    actionIR,gridn_motion);
+motiondes = [desxp(:)' desxm(:)' desyp(:)' desym(:)'];
+motiondes = motiondes./(norm(motiondes)+eps); % L2 normalization
+
+
+% Step4 (optional): Visualization of the optical flow fields and descriptors
+if nShowTag,
+    % Original flow fields
+    subx1= x1(ymin:ymax,xmin:xmax);
+    suby1 = y1(ymin:ymax,xmin:xmax);
+    subaxis(2,4,5,'Spacing', 0.03, 'Padding', 0.001, 'Margin', 0)
+    imshow(subimg,'border','tight');
+    imofx = subx1(1:20:end,1:20:end); 
+    imofy = suby1(1:20:end,1:20:end);
+    [X,Y]=meshgrid(1:20:size(subimg,2),1:20:size(subimg,1));
+    hold on;
+    quiver(X,Y,imofx,imofy,1.6,'color','y');
+    hold off;
+    set(gcf,'color','w');
+    title('Optical Flow Field');
+    
+    % Descriptors
+    subimofxp=desxp/max(desxp(:));
+    subimofxm=desxm/max(desxm(:));
+    subimofyp=desyp/max(desyp(:));
+    subimofym=desym/max(desym(:));
+    imgof=[subimofxp subimofxm;subimofyp subimofym];
+    subaxis(2,4,6,'Spacing', 0.03, 'Padding', 0.001, 'Margin', 0),
+    imshow(imgof);
+    line([0 19],[9.5 9.5],'linewidth',2,'color','y')
+    line([9.5 9.5],[0 19],'linewidth',2,'color','y')
+    title('Motion Des.(Form 1)');
+    
+    % Descriptor
+    mf=motiondes;
+    xp=reshape(mf(1:gridn_motion*gridn_motion),gridn_motion,gridn_motion);
+    xm=reshape(mf(gridn_motion*gridn_motion+1:2*gridn_motion*gridn_motion),...
+        gridn_motion,gridn_motion);
+    yp=reshape(mf(2*gridn_motion*gridn_motion+1:3*gridn_motion*gridn_motion),...
+        gridn_motion,gridn_motion);
+    ym=reshape(mf(3*gridn_motion*gridn_motion+1:4*gridn_motion*gridn_motion),...
+        gridn_motion,gridn_motion);
+    xc = xp - xm;
+    yc = yp - ym;
+    subaxis(2,4,7,'Spacing', 0.03, 'Padding', 0.001, 'Margin', 0),
+    imshow(xc.^2+yc.^2,[]);
+    hold on,
+    quiver(xc,yc,'color','g');
+    set(gcf,'Color','w');
+    title('Motion Des.(Form 2)');
+end
+
+end
