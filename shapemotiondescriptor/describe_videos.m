@@ -1,7 +1,6 @@
 function describe_videos()
 	% loading videos
 	addpath('../src');
-	%addpath('../time_warping');
 	rgb_videos = videos_loader();
 	videos = load('../weizmann/classification_masks.mat');
 	aligned_videos = videos.aligned_masks;
@@ -9,8 +8,8 @@ function describe_videos()
 	names = fieldnames(rgb_videos); 
 	videos = struct;
 	% for all videos
-	%for i = 1:numel(names)
-	for i = 1:1
+	counter = 0;
+	for i = 1:numel(names)
 		% Process a new  video
 		vdes = [];% video descriptor
     		rgb_video = rgb_videos.(names{i});
@@ -18,18 +17,15 @@ function describe_videos()
 		aligned_video = aligned_videos.(names{i});
 		sz = size(aligned_video);
 		nframes = sz(3);
-		%for j = 1: 40: nframes-1
-		for j = 1:1
+		for j = 1: nframes-1
 			[shapedes, motiondes] = extract_features(aligned_video(:,:,j), rgb_video(j).cdata, rgb_video(j+1).cdata);
 			des = [shapedes motiondes];
 			vdes = horzcat(vdes, des');
 		end
-		'setting field'
 		videos = setfield(videos, names{i}, vdes);
-		'done setting field'
-		videos
-		whos videos
+		counter = counter + 1
 	end
-	%save('described_videos.mat','videos');
+	'now saving'
+	save described_videos.mat -struct videos;
 end
 
