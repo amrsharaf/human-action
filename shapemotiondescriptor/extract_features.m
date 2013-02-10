@@ -13,11 +13,11 @@
 % Date: 07-21-2012
 % =========================================================================
 
-function [shapedes, motiondes] = extract_features(img1, img2)
+function [shapedes, motiondes] = extract_features(bimg, img1, img2)
 %clear all;
 %close all;
 %clc;
-nShowTag = 1; % visualize the observations and the extraced descriptors
+nShowTag = 0; % visualize the observations and the extraced descriptors
 
 %% extract silhouette-based shape descriptor
 %bimg_fn = './images/bimg220.png';
@@ -25,7 +25,7 @@ nShowTag = 1; % visualize the observations and the extraced descriptors
 
 % Step1: Specifying the action interest region (related to boundingbox of
 % human region, please refer to our paper if you have questions)
-[row,col] = find(img1);
+[row,col] = find(bimg);
 bbox.xmin = min(col); bbox.xmax = max(col);
 bbox.ymin = min(row); bbox.ymax = max(row);
 xmin = round((bbox.xmin+bbox.xmax)/2.0-(bbox.ymax-bbox.ymin)/2.0);
@@ -36,13 +36,13 @@ actionIR.xmin = xmin; actionIR.xmax = xmax;
 actionIR.ymin = ymin; actionIR.ymax = ymax;
 
 % Step2: Extracting the silhouette descriptors
-gridn_shape = 18; % demension of shape des.: gridn_shape*gridn_shape
-shapedes = extractShapeDescriptorBG(img1, actionIR, gridn_shape);
+gridn_shape = 16; % demension of shape des.: gridn_shape*gridn_shape
+shapedes = extractShapeDescriptorBG(bimg, actionIR, gridn_shape);
 
 % Step3 (optional): Visualization of the silhouette observation and descriptor
 if nShowTag,
     % Silhouette
-    subbimg = img1(ymin:ymax,xmin:xmax);
+    subbimg = bimg(ymin:ymax,xmin:xmax);
     figure,
     subaxis(2,4,1,'Spacing', 0.03, 'Padding', 0.001, 'Margin', 0),
     imshow(subbimg);
@@ -60,13 +60,22 @@ end
 %img1 = imread(img1_fn);
 
 % Step1: Computing gradient observations for an input image
-img1
-size(img1)
 [mag,theta] = computegradientdata(img1);
 
 % Step2: Specifying the action interest region
-bbox.xmin = 340; bbox.xmax = 500;
-bbox.ymin = 85;  bbox.ymax = 408;
+%[row,col] = find(img1);
+%bbox.xmin = min(col); bbox.xmax = max(col);
+%bbox.ymin = min(row); bbox.ymax = max(row);
+%xmin = round((bbox.xmin+bbox.xmax)/2.0-(bbox.ymax-bbox.ymin)/2.0);
+%xmax = round((bbox.xmin+bbox.xmax)/2.0+(bbox.ymax-bbox.ymin)/2.0);
+%ymin = bbox.ymin;
+%ymax = bbox.ymax;
+%actionIR.xmin = xmin; actionIR.xmax = xmax;
+%actionIR.ymin = ymin; actionIR.ymax = ymax;
+
+sz = size(img1);
+bbox.xmin = 0; bbox.xmax = sz(2);
+bbox.ymin = 0;  bbox.ymax = sz(1);
 [height, width]=size(mag);
 xmin = max(round((bbox.xmin+bbox.xmax)/2.0-(bbox.ymax-bbox.ymin)/2.0),1);
 xmax = min(round((bbox.xmin+bbox.xmax)/2.0+(bbox.ymax-bbox.ymin)/2.0),width);
@@ -76,8 +85,8 @@ actionIR.xmin = xmin; actionIR.xmax = xmax;
 actionIR.ymin = ymin; actionIR.ymax = ymax;
 
 % Step3: Extracting the simplified (non-overlapping) hog descritpor
-gridquant = 6; % dimension of hog des.: gridquant*gridquant*thequant
-thequant = 9;
+gridquant = 8; % dimension of hog des.: gridquant*gridquant*thequant
+thequant = 4;
 [hogdes,sub_hog_mat] = extractShapeDescriptorHOG(mag, theta, gridquant,...
     thequant, actionIR, 1);
 hogdes = hogdes./(norm(hogdes)+eps); % L2 normalization
@@ -131,18 +140,18 @@ if nMotionComp,
 end
 
 % Step2: Specifying the action interest region
-bbox.xmin=340; bbox.xmax=500;
-bbox.ymin=85; bbox.ymax=408;
-[height, width]=size(x1);
-xmin=max(round((bbox.xmin+bbox.xmax)/2.0-(bbox.ymax-bbox.ymin)/2.0),1);
-xmax=min(round((bbox.xmin+bbox.xmax)/2.0+(bbox.ymax-bbox.ymin)/2.0),width);
-ymin=max(bbox.ymin,1);
-ymax=min(bbox.ymax,height);
-actionIR.xmin=xmin; actionIR.xmax=xmax;
-actionIR.ymin=ymin; actionIR.ymax=ymax;
+%bbox.xmin=340; bbox.xmax=500;
+%bbox.ymin=85; bbox.ymax=408;
+%[height, width]=size(x1);
+%xmin=max(round((bbox.xmin+bbox.xmax)/2.0-(bbox.ymax-bbox.ymin)/2.0),1);
+%xmax=min(round((bbox.xmin+bbox.xmax)/2.0+(bbox.ymax-bbox.ymin)/2.0),width);
+%ymin=max(bbox.ymin,1);
+%ymax=min(bbox.ymax,height);
+%actionIR.xmin=xmin; actionIR.xmax=xmax;
+%actionIR.ymin=ymin; actionIR.ymax=ymax;
 
 % Step3: Extracting motion descriptors from the flow field
-gridn_motion = 9; % the demension of descriptor is 4*gridn_motion*gridn_motion
+gridn_motion = 8; % the demension of descriptor is 4*gridn_motion*gridn_motion
 [desxp, desxm, desyp, desym] = extractMotionDescriptor(x1,y1,...
     actionIR,gridn_motion);
 motiondes = [desxp(:)' desxm(:)' desyp(:)' desym(:)'];
