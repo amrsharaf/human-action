@@ -13,19 +13,17 @@
 % Date: 07-21-2012
 % =========================================================================
 
-function [shapedes, motiondes] = extract_features(bimg, img1, img2)
+function [shapedes, motiondes] = extract_features(bimg1, bimg2, img1, img2)
 %clear all;
 %close all;
 %clc;
 nShowTag = 0; % visualize the observations and the extraced descriptors
 
 %% extract silhouette-based shape descriptor
-%bimg_fn = './images/bimg220.png';
-%bimg = imread(img1_fn);
 
 % Step1: Specifying the action interest region (related to boundingbox of
 % human region, please refer to our paper if you have questions)
-[row,col] = find(bimg);
+[row,col] = find(bimg1);
 bbox.xmin = min(col); bbox.xmax = max(col);
 bbox.ymin = min(row); bbox.ymax = max(row);
 xmin = round((bbox.xmin+bbox.xmax)/2.0-(bbox.ymax-bbox.ymin)/2.0);
@@ -37,13 +35,13 @@ actionIR.ymin = ymin; actionIR.ymax = ymax;
 
 % Step2: Extracting the silhouette descriptors
 gridn_shape = 16; % demension of shape des.: gridn_shape*gridn_shape
-shapedes = extractShapeDescriptorBG(bimg, actionIR, gridn_shape);
+shapedes = extractShapeDescriptorBG(bimg1, actionIR, gridn_shape);
 
 % Step3 (optional): Visualization of the silhouette observation and descriptor
 if nShowTag,
     % Silhouette
-    subbimg = bimg(ymin:ymax,xmin:xmax);
-    figure,
+    subbimg = bimg1(ymin:ymax,xmin:xmax);
+    figure(1),
     subaxis(2,4,1,'Spacing', 0.03, 'Padding', 0.001, 'Margin', 0),
     imshow(subbimg);
     title('Silhouette');
@@ -56,37 +54,31 @@ if nShowTag,
 end
 
 %% extract simplified hog-based shape descriptor
-%img1_fn = './images/img120.bmp';
-%img1 = imread(img1_fn);
 
 % Step1: Computing gradient observations for an input image
 [mag,theta] = computegradientdata(img1);
 
 % Step2: Specifying the action interest region
-%[row,col] = find(img1);
-%bbox.xmin = min(col); bbox.xmax = max(col);
-%bbox.ymin = min(row); bbox.ymax = max(row);
-%xmin = round((bbox.xmin+bbox.xmax)/2.0-(bbox.ymax-bbox.ymin)/2.0);
-%xmax = round((bbox.xmin+bbox.xmax)/2.0+(bbox.ymax-bbox.ymin)/2.0);
-%ymin = bbox.ymin;
-%ymax = bbox.ymax;
-%actionIR.xmin = xmin; actionIR.xmax = xmax;
-%actionIR.ymin = ymin; actionIR.ymax = ymax;
-
-sz = size(img1);
-bbox.xmin = 0; bbox.xmax = sz(2);
-bbox.ymin = 0;  bbox.ymax = sz(1);
-[height, width]=size(mag);
-xmin = max(round((bbox.xmin+bbox.xmax)/2.0-(bbox.ymax-bbox.ymin)/2.0),1);
-xmax = min(round((bbox.xmin+bbox.xmax)/2.0+(bbox.ymax-bbox.ymin)/2.0),width);
-ymin = max(bbox.ymin,1);
-ymax = min(bbox.ymax,height);
+sz = size(bimg2);
+[row,col] = find(bimg2);
+bbox.xmin = min(col);
+bbox.xmax = max(col);
+bbox.ymin = min(row);
+bbox.ymax = max(row);
+xmin = round((bbox.xmin+bbox.xmax)/2.0-(bbox.ymax-bbox.ymin)/2.0);
+xmax = round((bbox.xmin+bbox.xmax)/2.0+(bbox.ymax-bbox.ymin)/2.0);
+xmax = min([sz(2) xmax]);
+xmin = max([1 xmin]);
+ymin = bbox.ymin;
+ymax = bbox.ymax;
 actionIR.xmin = xmin; actionIR.xmax = xmax;
 actionIR.ymin = ymin; actionIR.ymax = ymax;
 
 % Step3: Extracting the simplified (non-overlapping) hog descritpor
 gridquant = 8; % dimension of hog des.: gridquant*gridquant*thequant
 thequant = 4;
+actionIR
+whos actionIR
 [hogdes,sub_hog_mat] = extractShapeDescriptorHOG(mag, theta, gridquant,...
     thequant, actionIR, 1);
 hogdes = hogdes./(norm(hogdes)+eps); % L2 normalization
@@ -95,6 +87,7 @@ hogdes = hogdes./(norm(hogdes)+eps); % L2 normalization
 % and descriptor
 if nShowTag,
     % Image gradients
+    figure(1)
     magdata = mag(ymin:ymax,xmin:xmax);
     thetadata = theta(ymin:ymax,xmin:xmax);
     gradientx1 = magdata.*cos(thetadata);
@@ -120,10 +113,6 @@ if nShowTag,
 end
 
 %% extract optical flow based motion descriptors
-%img1_fn = './images/img120.bmp';
-%img2_fn = './images/img121.bmp';
-%img1 = imread(img1_fn);
-%img2 = imread(img2_fn);
 
 % Step1: Computing the optical flow field for two input images
 addpath(genpath('./openvis3dsrc/'));
@@ -139,16 +128,7 @@ if nMotionComp,
     y1 = y1 - median(y1(:));
 end
 
-% Step2: Specifying the action interest region
-%bbox.xmin=340; bbox.xmax=500;
-%bbox.ymin=85; bbox.ymax=408;
-%[height, width]=size(x1);
-%xmin=max(round((bbox.xmin+bbox.xmax)/2.0-(bbox.ymax-bbox.ymin)/2.0),1);
-%xmax=min(round((bbox.xmin+bbox.xmax)/2.0+(bbox.ymax-bbox.ymin)/2.0),width);
-%ymin=max(bbox.ymin,1);
-%ymax=min(bbox.ymax,height);
-%actionIR.xmin=xmin; actionIR.xmax=xmax;
-%actionIR.ymin=ymin; actionIR.ymax=ymax;
+% Step2: specify action interest regions, use previous specification
 
 % Step3: Extracting motion descriptors from the flow field
 gridn_motion = 8; % the demension of descriptor is 4*gridn_motion*gridn_motion
@@ -161,6 +141,7 @@ motiondes = motiondes./(norm(motiondes)+eps); % L2 normalization
 % Step4 (optional): Visualization of the optical flow fields and descriptors
 if nShowTag,
     % Original flow fields
+    figure(1)
     subx1= x1(ymin:ymax,xmin:xmax);
     suby1 = y1(ymin:ymax,xmin:xmax);
     subaxis(2,4,5,'Spacing', 0.03, 'Padding', 0.001, 'Margin', 0)

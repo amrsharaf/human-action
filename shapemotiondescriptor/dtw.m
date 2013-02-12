@@ -1,4 +1,4 @@
-function [Dist,D,k,w]=dtw(t,r)
+function [Dist,D,k,w,score]=dtw(t,r)
 %Dynamic Time Warping Algorithm
 %Dist is unnormalized distance between t and r
 %D is the accumulated distance matrix
@@ -56,3 +56,16 @@ while ((n+m)~=2)
     k=k+1;
     w=cat(1,w,[n,m]);
 end
+
+% now calculate the matching score
+dist_sum = 0; % sum of eculidian distances
+sz = size(w); % size of matching matrix
+nframes = sz(1); % number of frames
+for i = 1 : nframes
+	% now select the two matching frames
+	framea = w(i,1);
+	frameb = w(i,2);
+	% calculate the eclidian distance between the two frames
+	dist_sum = dist_sum + sqrt(sum((t(:,framea) - r(:,frameb)) .^ 2)); 
+end
+score = dist_sum / nframes

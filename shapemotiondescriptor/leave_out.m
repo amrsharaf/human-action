@@ -1,28 +1,29 @@
 function leave_out()
-% start by loading videos
-'Loading videos ...'
-videos = load('described_videos.mat');
-'Videos loaded ...'
-names = fieldnames(videos); 
-datav = [];
-for i = 1:numel(names)
-	% Process a new  video
-	videoi = videos.(names{i});
-	features = [];
-	for j = 1:numel(names)
-		videoj = videos.(names{j});
-		% now you have two videos
-		[Dist, D, k, w] = dtw(videoi, videoj);
-		features = [features Dist];
+	% start by loading videos
+	'Loading videos ...'
+	videos = load('described_videos.mat');
+	'Videos loaded ...'
+	names = fieldnames(videos); 
+	datav = [];
+	for i = 1:numel(names)
+		% Process a new  video
+		videoi = videos.(names{i});
+		features = [];
+		for j = 1:numel(names)
+			videoj = videos.(names{j});
+			% now you have two videos
+			[Dist,D,k,w,score] = dtw(videoi, videoj);
+			features = [features score];
+		end
+		% now add class as the last column
+		features = [features get_class(names{i})];
+		datav = [datav; features];
 	end
-	% now add class as the last column
-	features = [features get_class(names{i})];
-	datav = [datav; features];
-end
-'done with all videos'
-crossval(str2func('classify'),datav,'leaveout',1)
+	'done with all videos'
+	crossval(str2func('classify'),datav,'leaveout',1)
 end
 
+% This function assigns a unique id for each action from the dataset
 function [classid] = get_class(str)
 	if ~isempty(findstr(str,'bend'))
 		classid = 1
