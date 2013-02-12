@@ -56,7 +56,7 @@ end
 %% extract simplified hog-based shape descriptor
 
 % Step1: Computing gradient observations for an input image
-[mag,theta] = computegradientdata(img1);
+%[mag,theta] = computegradientdata(img1);
 
 % Step2: Specifying the action interest region
 sz = size(bimg2);
@@ -75,42 +75,41 @@ actionIR.xmin = xmin; actionIR.xmax = xmax;
 actionIR.ymin = ymin; actionIR.ymax = ymax;
 
 % Step3: Extracting the simplified (non-overlapping) hog descritpor
-gridquant = 8; % dimension of hog des.: gridquant*gridquant*thequant
-thequant = 4;
-actionIR
-whos actionIR
-[hogdes,sub_hog_mat] = extractShapeDescriptorHOG(mag, theta, gridquant,...
-    thequant, actionIR, 1);
-hogdes = hogdes./(norm(hogdes)+eps); % L2 normalization
+%gridquant = 8; % dimension of hog des.: gridquant*gridquant*thequant
+%thequant = 4;
+%actionIR
+%[hogdes,sub_hog_mat] = extractShapeDescriptorHOG(mag, theta, gridquant,...
+%    thequant, actionIR, 1);
+%hogdes = hogdes./(norm(hogdes)+eps); % L2 normalization
 
 % Step4 (optional): Visualization of the image gradient observation 
 % and descriptor
-if nShowTag,
+%if nShowTag,
     % Image gradients
-    figure(1)
-    magdata = mag(ymin:ymax,xmin:xmax);
-    thetadata = theta(ymin:ymax,xmin:xmax);
-    gradientx1 = magdata.*cos(thetadata);
-    grdaienty1 = magdata.*sin(thetadata);
+%    figure(1)
+%    magdata = mag(ymin:ymax,xmin:xmax);
+%    thetadata = theta(ymin:ymax,xmin:xmax);
+%    gradientx1 = magdata.*cos(thetadata);
+%    grdaienty1 = magdata.*sin(thetadata);
     subimg = img1(ymin:ymax,xmin:xmax,:);
-    subaxis(2,4,3,'Spacing', 0.03, 'Padding', 0.001, 'Margin', 0)
-    imshow(subimg,'border','tight');
-    [X,Y]=meshgrid(1:8:size(subimg,2),1:8:size(subimg,1));
-    imgrax = gradientx1(1:8:end,1:8:end);
-    imgray = grdaienty1(1:8:end,1:8:end);
-    hold on;
-    quiver(X,Y,imgrax,imgray,1.6,'color','y');
-    hold off;
-    set(gcf,'color','w');
-    title('Image Gradient Field');
+%    subaxis(2,4,3,'Spacing', 0.03, 'Padding', 0.001, 'Margin', 0)
+%    imshow(subimg,'border','tight');
+%    [X,Y]=meshgrid(1:8:size(subimg,2),1:8:size(subimg,1));
+%    imgrax = gradientx1(1:8:end,1:8:end);
+%    imgray = grdaienty1(1:8:end,1:8:end);
+%    hold on;
+%    quiver(X,Y,imgrax,imgray,1.6,'color','y');
+%    hold off;
+%    set(gcf,'color','w');
+%    title('Image Gradient Field');
     
     % Descriptor
-    addpath(genpath('./toolbox'));
-    V=hogDraw(sub_hog_mat,30);
-    subaxis(2,4,4,'Spacing', 0.03, 'Padding', 0.001, 'Margin', 0),
-    imshow(V);
-    title('HOG-based Shape');
-end
+%    addpath(genpath('./toolbox'));
+%    V=hogDraw(sub_hog_mat,30);
+%    subaxis(2,4,4,'Spacing', 0.03, 'Padding', 0.001, 'Margin', 0),
+%    imshow(V);
+%    title('HOG-based Shape');
+%end
 
 %% extract optical flow based motion descriptors
 

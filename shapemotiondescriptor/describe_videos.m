@@ -30,4 +30,3 @@ function describe_videos()
 	'now saving'
 	save described_videos2.mat -struct videos;
 end
-

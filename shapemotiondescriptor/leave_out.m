@@ -1,7 +1,7 @@
 function leave_out()
 	% start by loading videos
 	'Loading videos ...'
-	videos = load('described_videos.mat');
+	videos = load('described_videos2.mat');
 	'Videos loaded ...'
 	names = fieldnames(videos); 
 	datav = [];
